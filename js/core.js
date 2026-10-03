@@ -437,7 +437,7 @@ const defaultState = {
   talentPoints: 0, talents: {}, talentsSpent: 0,
   season: null, seasonsSeen: 0, nextSeasonAt: 0,
   dailyChallenge: null, dailiesCompleted: 0,
-  lastSave: Date.now(), playTime: 0,
+  lastSave: 0, playTime: 0,
   hallOfFame: [],
   pearlShopLevels: {}, pearlShopBonus: 0, pearlShopSpeed: 0, pearlShopLuck: 0, pearlShopXP: 0, pearlShopVariant: 0
 };
@@ -1750,16 +1750,29 @@ function migrateSave(raw) {
   s.talents = { ...(raw.talents || {}) };
   s.pearlShopLevels = { ...(raw.pearlShopLevels || {}) };
   s.bossDefeated = !!s.bossDefeated;
-  s.season = raw.season && raw.season.expiresAt > Date.now() ? raw.season : null;
-  if (s.season) {
-    const seasonDef = SEASONS.find(x => x.id === s.season.id);
-    if (!seasonDef) {
-      s.season = { id: "spring", startedAt: Date.now(), expiresAt: Date.now() + SEASON_DURATION_MS };
-    } else {
-      const startedAt = Number(s.season.startedAt) || Date.now();
-      s.season.startedAt = startedAt;
-      s.season.expiresAt = Math.max(Number(s.season.expiresAt) || 0, startedAt + SEASON_DURATION_MS);
-    }
+
+  // Mantém o ciclo das estações mesmo quando o jogador fecha o jogo durante
+  // uma estação. Se uma ou mais estações terminaram enquanto o jogo estava
+  // fechado, calcula diretamente qual estação deveria estar ativa agora.
+  const nowForSeason = Date.now();
+  const rawSeason = raw.season;
+  if (rawSeason && typeof rawSeason === "object") {
+    const baseIndex = Math.max(0, SEASONS.findIndex(x => x.id === rawSeason.id));
+    const originalStartedAt = Number(rawSeason.startedAt) || nowForSeason;
+    const elapsedSeasons = Math.max(0, Math.floor((nowForSeason - originalStartedAt) / SEASON_DURATION_MS));
+    const currentIndex = (baseIndex + elapsedSeasons) % SEASONS.length;
+    const currentStartedAt = originalStartedAt + elapsedSeasons * SEASON_DURATION_MS;
+    const currentDef = SEASONS[currentIndex] || SEASONS[0];
+    s.season = {
+      id: currentDef.id,
+      startedAt: currentStartedAt,
+      expiresAt: currentStartedAt + SEASON_DURATION_MS
+    };
+    s.seasonsSeen = Math.max(Number(s.seasonsSeen) || 0, 1 + elapsedSeasons);
+    s.nextSeasonAt = s.season.expiresAt;
+  } else {
+    s.season = { id: "spring", startedAt: nowForSeason, expiresAt: nowForSeason + SEASON_DURATION_MS };
+    s.seasonsSeen = Math.max(1, Number(s.seasonsSeen) || 0);
     s.nextSeasonAt = s.season.expiresAt;
   }
   s.dailyChallenge = raw.dailyChallenge || null;
@@ -1810,8 +1823,14 @@ function migrateSave(raw) {
 }
 
 let state;
+let initialSaveFound = false;
+let indexedDbReady = false;
 const SAVE_KEYS = ["pescaria_idle_autosave", "pescaria_idle_v14", "pescaria_idle_v13", "pescaria_idle_v12", "pescaria_idle_v11", "pescaria_idle_v10", "pescaria_idle_v2"];
 const SAVE_HASH_PREFIX = "pescariaSave=";
+const IDB_NAME = "PescariaIdleDB";
+const IDB_VERSION = 1;
+const IDB_STORE = "saves";
+const IDB_SAVE_KEY = "current";
 
 function encodeSave(raw) {
   return btoa(unescape(encodeURIComponent(JSON.stringify(raw))));
@@ -1865,14 +1884,85 @@ function readBestLocalSave() {
 }
 try {
   const raw = readBestLocalSave();
+  initialSaveFound = !!raw;
   state = migrateSave(raw);
 } catch (e) {
+  initialSaveFound = false;
   state = initQuestsIfNeeded(JSON.parse(JSON.stringify(defaultState)));
 }
 refreshDailyIfNeeded();
 recalcPearlShopBonuses();
 
 const $ = id => document.getElementById(id);
+
+function openSaveDB() {
+  return new Promise((resolve, reject) => {
+    if (!window.indexedDB) return reject(new Error("IndexedDB indisponível"));
+    const req = indexedDB.open(IDB_NAME, IDB_VERSION);
+    req.onupgradeneeded = () => {
+      const db = req.result;
+      if (!db.objectStoreNames.contains(IDB_STORE)) db.createObjectStore(IDB_STORE);
+    };
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error || new Error("Falha ao abrir IndexedDB"));
+  });
+}
+
+async function readIndexedSave() {
+  try {
+    const db = await openSaveDB();
+    return await new Promise((resolve, reject) => {
+      const tx = db.transaction(IDB_STORE, "readonly");
+      const req = tx.objectStore(IDB_STORE).get(IDB_SAVE_KEY);
+      req.onsuccess = () => resolve(req.result || null);
+      req.onerror = () => reject(req.error);
+    });
+  } catch (e) { return null; }
+}
+
+async function writeIndexedSave(payload) {
+  try {
+    const db = await openSaveDB();
+    await new Promise((resolve, reject) => {
+      const tx = db.transaction(IDB_STORE, "readwrite");
+      tx.objectStore(IDB_STORE).put(payload, IDB_SAVE_KEY);
+      tx.oncomplete = resolve;
+      tx.onerror = () => reject(tx.error);
+      tx.onabort = () => reject(tx.error);
+    });
+    return true;
+  } catch (e) { return false; }
+}
+
+async function clearIndexedSave() {
+  try {
+    const db = await openSaveDB();
+    await new Promise((resolve, reject) => {
+      const tx = db.transaction(IDB_STORE, "readwrite");
+      tx.objectStore(IDB_STORE).delete(IDB_SAVE_KEY);
+      tx.oncomplete = resolve;
+      tx.onerror = () => reject(tx.error);
+      tx.onabort = () => reject(tx.error);
+    });
+    return true;
+  } catch (e) { return false; }
+}
+
+async function hydratePersistentSave() {
+  const indexed = await readIndexedSave();
+  if (indexed && typeof indexed === "object") {
+    const indexedTime = Number(indexed.lastSave) || 0;
+    const currentTime = Number(state.lastSave) || 0;
+    // Se não havia save local, o IndexedDB sempre ganha. Caso já exista um
+    // save local, só substitui quando o IndexedDB for mais recente.
+    if (!initialSaveFound || indexedTime > currentTime) {
+      state = migrateSave(indexed);
+      refreshDailyIfNeeded();
+      recalcPearlShopBonuses();
+    }
+  }
+  indexedDbReady = true;
+}
 
 function save() {
   if (!state) return false;
@@ -1884,12 +1974,19 @@ function save() {
     for (const key of ["pescaria_idle_autosave", "pescaria_idle_v14", "pescaria_idle_v13", "pescaria_idle_v12"]) {
       try { localStorage.setItem(key, payload); stored = true; } catch (e) {}
     }
-    // Sempre atualiza a segunda camada, mesmo quando localStorage falhar.
-    const hashStored = writeHashSave(state);
-    if (!stored && !hashStored) console.warn("Nenhum método de save persistente está disponível neste navegador.");
-    return stored || hashStored;
+    // Hash continua como último recurso para arquivos locais, mas o GitHub
+    // usa localStorage + IndexedDB, evitando depender de uma URL gigante.
+    let hashStored = false;
+    if (!stored) hashStored = writeHashSave(state);
+    if (indexedDbReady) writeIndexedSave(state);
+    if (!stored && !hashStored && !indexedDbReady) console.warn("Nenhum método de save persistente está disponível neste navegador.");
+    return stored || hashStored || indexedDbReady;
   } catch (e) {
-    try { return writeHashSave(state); } catch (_) { return false; }
+    try {
+      const hashStored = writeHashSave(state);
+      if (indexedDbReady) writeIndexedSave(state);
+      return hashStored || indexedDbReady;
+    } catch (_) { return indexedDbReady; }
   }
 }
 

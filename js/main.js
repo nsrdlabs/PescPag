@@ -217,9 +217,11 @@ function importSave() {
     alert("📥 Save importado com sucesso!");
   } catch (e) { alert("❌ Save inválido!"); }
 }
-function resetSave() {
+async function resetSave() {
   if (!confirm("⚠️ Apagar TODO o progresso? Não pode ser desfeito.")) return;
-  ["pescaria_idle_autosave","pescaria_idle_v14","pescaria_idle_v13","pescaria_idle_v12","pescaria_idle_v11","pescaria_idle_v10","pescaria_idle_v9","pescaria_idle_v2"].forEach(k => localStorage.removeItem(k));
+  ["pescaria_idle_autosave","pescaria_idle_v14","pescaria_idle_v13","pescaria_idle_v12","pescaria_idle_v11","pescaria_idle_v10","pescaria_idle_v9","pescaria_idle_v2"].forEach(k => { try { localStorage.removeItem(k); } catch (e) {} });
+  try { history.replaceState(null, "", location.href.split("#")[0]); } catch (e) {}
+  await clearIndexedSave();
   location.reload();
 }
 
@@ -244,6 +246,7 @@ function tick() {
   if (now > state.nextEventAt) triggerRandomEvent();
   if (state.season && now >= state.season.expiresAt) triggerSeason();
   else if (!state.season) triggerSeason();
+  if (currentOverlay === "season") renderOverlay();
   if (state.boost && now > state.boost.expiresAt) state.boost = null;
   state.playTime += 1;
 
@@ -368,12 +371,17 @@ document.addEventListener("keydown", (e) => {
 /* ============================================================
    INIT
    ============================================================ */
-offline();
-showOfflineReport();
-render();
-sceneIdle();
-if (state.auto && (state.autoPermanent || state.autoExpiresAt > Date.now())) schedule();
-save();
-setInterval(tick, 1000);
+(async () => {
+  // Carrega o save mais recente antes de iniciar os ciclos do jogo.
+  // Isso evita que um estado inicial vazio sobrescreva um save existente.
+  await hydratePersistentSave();
+  offline();
+  showOfflineReport();
+  render();
+  sceneIdle();
+  if (state.auto && (state.autoPermanent || state.autoExpiresAt > Date.now())) schedule();
+  save();
+  setInterval(tick, 1000);
 
-console.log("🎣 Pescaria Idle V14.2 carregado.");
+  console.log("🎣 Pescaria Idle V14.3 carregado.");
+})();

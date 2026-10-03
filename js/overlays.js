@@ -557,8 +557,12 @@ function renderOverlaySeason() {
   const total = state.season.expiresAt - state.season.startedAt;
   const left = state.season.expiresAt - Date.now();
   const pct = Math.max(0, Math.min(100, (left / total) * 100));
-  const mins = Math.floor(left / 60000);
-  const secs = Math.floor((left % 60000) / 1000);
+  const totalSeconds = Math.max(0, Math.floor(left / 1000));
+  const days = Math.floor(totalSeconds / 86400);
+  const hours = Math.floor((totalSeconds % 86400) / 3600);
+  const mins = Math.floor((totalSeconds % 3600) / 60);
+  const secs = totalSeconds % 60;
+  const countdown = `${days} ${days === 1 ? "dia" : "dias"} ${String(hours).padStart(2,"0")}:${String(mins).padStart(2,"0")}:${String(secs).padStart(2,"0")}`;
   overlayBody.innerHTML = `
     <div class="season-card" style="background:linear-gradient(135deg,#0b7187,#4dd0a8);border-radius:14px;padding:16px;text-align:center;color:#fff;margin-bottom:16px">
       <div style="font-size:48px">${s.emoji}</div>
@@ -567,7 +571,7 @@ function renderOverlaySeason() {
       <div style="height:8px;background:rgba(0,0,0,.25);border-radius:9px;overflow:hidden;margin:10px 0">
         <div style="height:100%;width:${pct}%;background:linear-gradient(90deg,#fff,#ffd166);border-radius:9px;transition:width .3s"></div>
       </div>
-      <div style="font-size:11px;opacity:.9">Termina em ${mins}m ${secs}s</div>
+      <div style="font-size:11px;opacity:.9">Termina em ${countdown}</div>
     </div>
     <div style="padding:12px;background:#0b3a4a;border-radius:12px">
       <div style="font-size:12px;font-weight:800;margin-bottom:8px">📊 Estatísticas</div>
