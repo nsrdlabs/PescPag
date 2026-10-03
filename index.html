@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#0a1929">
+<title>Pescaria Idle V13.1</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div id="rotateWarning">
+  <div class="rw-inner">
+    <span class="rw-icon">📱</span>
+    <h2>Gire o celular</h2>
+    <p>Este jogo foi feito para ser jogado na <b>horizontal</b>. Vire o aparelho para continuar.</p>
+  </div>
+</div>
+
+<div class="app">
+  <div class="topbar">
+    <button class="menu-btn" id="menuBtn" aria-label="Menu">☰</button>
+    <div class="title">🎣 Pescaria Idle</div>
+    <div class="coins"><span>🪙</span><span id="topCoins">0</span></div>
+  </div>
+
+  <div class="fish-screen">
+    <div class="scene sky-sun" id="scene">
+      <svg viewBox="0 0 400 260" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="skySun" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#3a7ca5"/><stop offset="45%" stop-color="#7fcdd6"/><stop offset="100%" stop-color="#f6d9a0"/></linearGradient>
+          <linearGradient id="skyRain" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#2c3540"/><stop offset="60%" stop-color="#3d4a58"/><stop offset="100%" stop-color="#5a6878"/></linearGradient>
+          <linearGradient id="skyStorm" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#0f1820"/><stop offset="60%" stop-color="#1a2535"/><stop offset="100%" stop-color="#2a3548"/></linearGradient>
+          <linearGradient id="skyFog" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#8a98a8"/><stop offset="50%" stop-color="#b0bcc8"/><stop offset="100%" stop-color="#d0d8e0"/></linearGradient>
+          <linearGradient id="skySnow" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#5a7a9a"/><stop offset="50%" stop-color="#98b0c8"/><stop offset="100%" stop-color="#d8e4f0"/></linearGradient>
+          <linearGradient id="skyNight" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#0a1a2e"/><stop offset="50%" stop-color="#1a2540"/><stop offset="100%" stop-color="#2a3a55"/></linearGradient>
+          <linearGradient id="waterGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#4fb3d9"/><stop offset="35%" stop-color="#2a7fa8"/><stop offset="100%" stop-color="#0b3b55"/></linearGradient>
+          <radialGradient id="sunGrad" cx="0.5" cy="0.5" r="0.5"><stop offset="0%" stop-color="#fff8d4"/><stop offset="60%" stop-color="#ffe18b"/><stop offset="100%" stop-color="#ffd166" stop-opacity="0"/></radialGradient>
+          <radialGradient id="moonGrad" cx="0.4" cy="0.4" r="0.6"><stop offset="0%" stop-color="#ffffff"/><stop offset="70%" stop-color="#f4f4e8"/><stop offset="100%" stop-color="#d8d8c8"/></radialGradient>
+          <linearGradient id="boatHull" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#a06e34"/><stop offset="50%" stop-color="#7a4a1f"/><stop offset="100%" stop-color="#4a2a10"/></linearGradient>
+          <linearGradient id="boatDeck" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#d9b280"/><stop offset="100%" stop-color="#a06e34"/></linearGradient>
+          <radialGradient id="splashGrad" cx="0.5" cy="0.5" r="0.5"><stop offset="0%" stop-color="#ffffff" stop-opacity="0.95"/><stop offset="60%" stop-color="#bfe9ff" stop-opacity="0.6"/><stop offset="100%" stop-color="#bfe9ff" stop-opacity="0"/></radialGradient>
+          <linearGradient id="fishBody" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#4fc3f7"/><stop offset="100%" stop-color="#0d47a1"/></linearGradient>
+          <linearGradient id="fishBodyCrit" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#ffe38b"/><stop offset="100%" stop-color="#ff9f1c"/></linearGradient>
+        </defs>
+        <rect class="sky-grad" x="0" y="0" width="400" height="120" fill="url(#skySun)"/>
+        <g id="sunGroup" style="opacity:1">
+          <circle cx="330" cy="50" r="42" fill="url(#sunGrad)"/>
+          <circle cx="330" cy="50" r="20" fill="#fff8d4" opacity="0.95"/>
+        </g>
+        <g id="moonGroup" opacity="0">
+          <circle cx="330" cy="45" r="20" fill="url(#moonGrad)"/>
+          <circle cx="337" cy="42" r="17" fill="#e0e0d0" opacity="0.35"/>
+        </g>
+        <g id="cloud1" opacity="0.85">
+          <ellipse cx="60" cy="34" rx="28" ry="9" fill="#ffffff"/>
+          <ellipse cx="74" cy="29" rx="16" ry="11" fill="#ffffff"/>
+          <ellipse cx="46" cy="32" rx="13" ry="8" fill="#ffffff"/>
+        </g>
+        <g id="cloud2" opacity="0.55">
+          <ellipse cx="180" cy="20" rx="20" ry="6" fill="#ffffff"/>
+          <ellipse cx="194" cy="16" rx="12" ry="8" fill="#ffffff"/>
+        </g>
+        <g id="darkClouds" opacity="0">
+          <ellipse cx="80" cy="35" rx="45" ry="14" fill="#4a5568"/>
+          <ellipse cx="110" cy="28" rx="30" ry="18" fill="#3a4555"/>
+          <ellipse cx="50" cy="32" rx="28" ry="12" fill="#4a5568"/>
+          <ellipse cx="240" cy="25" rx="40" ry="12" fill="#3a4555"/>
+          <ellipse cx="270" cy="20" rx="25" ry="15" fill="#4a5568"/>
+          <ellipse cx="210" cy="22" rx="22" ry="10" fill="#3a4555"/>
+          <ellipse cx="350" cy="38" rx="35" ry="11" fill="#4a5568"/>
+        </g>
+        <g id="weatherLayer"></g>
+        <rect x="0" y="120" width="400" height="140" fill="url(#waterGrad)"/>
+        <g id="waves1" opacity="0.55"><path d="M -50 122 q 25 -6 50 0 t 50 0 t 50 0 t 50 0 t 50 0 t 50 0 t 50 0 t 50 0 t 50 0" fill="none" stroke="#bfe9ff" stroke-width="1.6"/></g>
+        <g id="waves2" opacity="0.35"><path d="M -50 128 q 30 -5 60 0 t 60 0 t 60 0 t 60 0 t 60 0 t 60 0 t 60 0 t 60 0" fill="none" stroke="#ffffff" stroke-width="1.2"/></g>
+        <g class="bg-fish f1" opacity="0.35"><g transform="translate(60, 200)"><ellipse cx="0" cy="0" rx="14" ry="6" fill="#9fd6ff"/><polygon points="12,-5 22,0 12,5" fill="#9fd6ff"/><circle cx="-8" cy="-1" r="1.2" fill="#0a2540"/></g></g>
+        <g class="bg-fish f2" opacity="0.28"><g transform="translate(240, 230)"><ellipse cx="0" cy="0" rx="18" ry="8" fill="#7ec8e3"/><polygon points="16,-7 28,0 16,7" fill="#7ec8e3"/><circle cx="-10" cy="-2" r="1.5" fill="#0a2540"/></g></g>
+        <g class="bg-fish f3" opacity="0.22"><g transform="translate(150, 175)"><ellipse cx="0" cy="0" rx="11" ry="5" fill="#b8e0f0"/><polygon points="9,-4 17,0 9,4" fill="#b8e0f0"/><circle cx="-6" cy="-1" r="1" fill="#0a2540"/></g></g>
+        <g transform="translate(0, 0)"><g class="boat-bob">
+          <ellipse cx="200" cy="160" rx="60" ry="5" fill="#000" opacity="0.32"/>
+          <path d="M 137 142 Q 135 132 152 130 L 248 130 Q 265 132 263 142 Q 240 158 200 158 Q 160 158 137 142 Z" fill="url(#boatHull)" stroke="#3d2410" stroke-width="1.5"/>
+          <path d="M 142 144 Q 200 150 258 144" fill="none" stroke="#d4a574" stroke-width="1.4" opacity="0.75"/>
+          <path d="M 152 130 L 248 130 Q 252 130 252 132 L 148 132 Q 148 130 152 130 Z" fill="url(#boatDeck)"/>
+          <line x1="148" y1="132" x2="252" y2="132" stroke="#6b3f1c" stroke-width="0.8" opacity="0.6"/>
+          <rect x="188" y="122" width="24" height="6" rx="2" fill="#8b5a2b" stroke="#4a2a10" stroke-width="0.8"/>
+          <g id="anglerInner">
+            <path d="M 194 122 L 192 116 L 208 116 L 206 122 Z" fill="#2c3e50" stroke="#1a1a1a" stroke-width="0.6"/>
+            <ellipse cx="192" cy="122" rx="4" ry="1.8" fill="#1a1a1a"/>
+            <ellipse cx="208" cy="122" rx="4" ry="1.8" fill="#1a1a1a"/>
+            <path d="M 191 98 Q 190 116 191 117 L 209 117 Q 210 116 209 98 Q 205 93 200 93 Q 195 93 191 98 Z" fill="#c0392b" stroke="#4a1810" stroke-width="1.2"/>
+            <line x1="200" y1="94" x2="200" y2="116" stroke="#7b241c" stroke-width="0.9" opacity="0.85"/>
+            <circle cx="200" cy="102" r="0.9" fill="#f4d03f"/>
+            <circle cx="200" cy="107" r="0.9" fill="#f4d03f"/>
+            <circle cx="200" cy="112" r="0.9" fill="#f4d03f"/>
+            <path d="M 191 100 Q 185 102 183 110" stroke="#e8b48c" stroke-width="5" fill="none" stroke-linecap="round"/>
+            <circle cx="183" cy="110" r="2.8" fill="#e8b48c" stroke="#a06e34" stroke-width="0.6"/>
+            <g>
+              <circle cx="200" cy="90" r="7" fill="#e8b48c" stroke="#a06e34" stroke-width="0.6"/>
+              <path d="M 193 88 Q 200 82 207 88 L 206.5 86 Q 200 83 193.5 86 Z" fill="#3d2410"/>
+              <ellipse cx="200" cy="84" rx="10" ry="2.2" fill="#6b3f1c"/>
+              <path d="M 193.5 84 Q 192.5 77 196 76 Q 200 75 204 76 Q 207.5 77 206.5 84 Z" fill="#a06e34" stroke="#6b3f1c" stroke-width="0.6"/>
+              <ellipse cx="200" cy="77" rx="7" ry="1.6" fill="#8b5a2b"/>
+              <circle cx="198" cy="90" r="1" fill="#1a1a1a"/>
+              <circle cx="202.5" cy="90" r="1" fill="#1a1a1a"/>
+              <path d="M 198.5 92.5 Q 200 94 201.5 92.5" stroke="#7b241c" stroke-width="0.7" fill="none" stroke-linecap="round"/>
+            </g>
+          </g>
+          <g transform="translate(209, 100)"><g id="anglerArm"><path d="M 0 0 Q 8 -2 12 4" stroke="#e8b48c" stroke-width="5" fill="none" stroke-linecap="round"/><circle cx="12" cy="4" r="3.2" fill="#e8b48c" stroke="#a06e34" stroke-width="0.6"/></g></g>
+          <g transform="translate(213, 95)"><g id="rodGroup">
+            <path d="M 0 0 L 59 -47" stroke="#3d2410" stroke-width="2.6" stroke-linecap="round"/>
+            <path d="M 0 0 L 59 -47" stroke="#8b5a2b" stroke-width="1.2" stroke-linecap="round" opacity="0.9"/>
+            <ellipse cx="4" cy="-2" rx="4.5" ry="5.5" fill="#3d2410" stroke="#1a1a1a" stroke-width="0.8"/>
+            <circle cx="4" cy="-2" r="2.5" fill="#6b6b6b"/>
+            <path d="M -5 3 L 1 -2" stroke="#1a1a1a" stroke-width="3.2" stroke-linecap="round"/>
+          </g></g>
+        </g></g>
+        <path id="linePath" d="M 272 48 Q 288 120 250 180" stroke="#f4f4f4" stroke-width="0.9" fill="none" opacity="0.9" stroke-dasharray="2 1"/>
+        <g transform="translate(250, 180)"><g id="floatInner">
+          <circle cx="0" cy="0" r="4.5" fill="#e74c3c" stroke="#fff" stroke-width="0.7"/>
+          <circle cx="0" cy="0" r="1.6" fill="#fff"/>
+          <line x1="0" y1="-4.5" x2="0" y2="-8" stroke="#333" stroke-width="0.9"/>
+        </g></g>
+        <g id="ripple" opacity="0" transform="translate(250, 180)"><circle cx="0" cy="0" r="5" fill="none" stroke="#fff" stroke-width="1.5"/></g>
+        <g id="splash" opacity="0" transform="translate(250, 180)"><circle cx="0" cy="0" r="20" fill="url(#splashGrad)"/></g>
+        <g transform="translate(250, 180)"><g id="jumpingFish">
+          <g transform="scale(1.7)">
+            <ellipse cx="0" cy="0" rx="12" ry="5" fill="url(#fishBody)" stroke="#0a2540" stroke-width="0.5"/>
+            <polygon points="10,-4 18,0 10,4" fill="url(#fishBody)" stroke="#0a2540" stroke-width="0.4"/>
+            <circle cx="-6" cy="-1" r="1" fill="#0a2540"/>
+            <circle cx="-6" cy="-1.4" r="0.3" fill="#fff"/>
+          </g>
+        </g></g>
+      </svg>
+      <div class="scene-status" id="sceneStatus">Pronto para pescar</div>
+      <div class="scene-hud">
+        <div class="chip weather" id="weatherChip">☀️ Sol</div>
+        <div class="chip time" id="timeChip">🌅 00:00</div>
+      </div>
+    </div>
+
+    <div class="fish-panel">
+      <div class="row">
+        <div class="loc-name" id="locationName">🌿 Lago tranquilo</div>
+        <div class="luck-chip">🍀 <span id="luckDisplay">1.0x</span></div>
+      </div>
+      <div class="progress"><div class="bar" id="fishBar"></div></div>
+      <div class="status-line" id="status">Pronto para pescar!</div>
+      <button class="mainbtn" id="fishBtn">🎣 JOGAR A LINHA</button>
+      <div class="equip-bar" id="equipBar">
+        <div class="eq"><span class="ic">🎣</span><span class="lb" id="eqRod">Nv.1</span></div>
+        <div class="eq"><span class="ic">🪱</span><span class="lb" id="eqBait">Minhoca</span></div>
+        <div class="eq"><span class="ic">🪢</span><span class="lb" id="eqLine">Nv.1</span></div>
+        <div class="eq"><span class="ic">📡</span><span class="lb" id="eqDet">Nv.1</span></div>
+      </div>
+
+      <div class="auto-bar" id="autoBar">
+        <button class="auto-btn auto-temp" id="autoTempBtn">
+          <span class="ab-icon">⚓</span>
+          <span class="ab-text">
+            <span class="ab-title" id="autoTempTitle">Pesca automática 5 minutos</span>
+            <span class="ab-cost" id="autoTempCost">500 🪙</span>
+          </span>
+        </button>
+        <button class="auto-btn auto-perm" id="autoPermBtn">
+          <span class="ab-icon">🔒</span>
+          <span class="ab-text">
+            <span class="ab-title">Pesca Automática Permanente</span>
+            <span class="ab-cost" id="autoPermCost">250K 🪙</span>
+          </span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="overlayScreen">
+  <div class="overlay-header">
+    <button class="ov-back" id="overlayBack">←</button>
+    <div class="ov-title" id="overlayTitle">Menu</div>
+  </div>
+  <div class="overlay-body" id="overlayBody"></div>
+</div>
+
+<div class="travel-screen" id="travelScreen">
+  <div class="boat-icon">🚤</div>
+  <div class="travel-text">VIAJANDO PARA</div>
+  <div class="travel-dest" id="travelDest">🌿 Lago tranquilo</div>
+  <div class="travel-bar"><div class="travel-bar-fill" id="travelBarFill"></div></div>
+</div>
+
+<div id="modalOverlay"><div id="modalContent"></div></div>
+<div id="popupLayer"></div>
+
+<script src="js/core.js"></script>
+<script src="js/overlays.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
